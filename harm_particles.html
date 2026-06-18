@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Harm in the Stream</title>
+
+<link rel="stylesheet" href="harm_particles.css">
+</head>
+<body>
+
+<!-- ── fixed fullscreen canvas ── -->
+<div id="canvas-bg">
+  <canvas id="cv"></canvas>
+</div>
+
+<!-- ── hover tooltip ── -->
+<div id="tooltip">
+  <div id="tt-msg"></div>
+  <span id="tt-type"></span>
+</div>
+
+
+
+
+<!-- ── error overlay ── -->
+<div id="error-msg">
+  <h3>Cannot load harm_clean.csv</h3>
+  <p>Serve from the same folder:</p>
+  <code>python -m http.server 8080</code>
+  <p>Then open: <code>http://localhost:8080/harm_particles.html</code></p>
+</div>
+
+<!--  scroll -->
+<div id="scroll-root">
+
+  <!-- step 1 intro -->
+  <div class="step-section" data-step="1">
+    <div class="step-card" id="card-1">
+      <h2>Every dot is<br>a Twitch chat <em>message.</em></h2>
+      <p>
+        We analyzed 30k Twitch comments from 20 recent streams across 8 sports
+        betting accounts: @draftKings, @fanduel, @bookitsports, @bettingnews,
+        @betmgmtonight, @oddjambets, @sportsbookbankz, @myguyknowsaguy
+      </p>
+    </div>
+  </div>
+
+  <!--  5 chat bubbles -->
+  <section id="chat-prologue">
+   
+
+    <div class="chat-row" data-bubble="0">
+      <div class="chat-bubble">
+        <span class="username">karmvirsingh7890</span>
+        Can&#8217;t wait to <mark>turn 21 in two weeks</mark>, so many sign up bonuses
+      </div>
+    </div>
+
+    <div class="chat-row" data-bubble="1">
+      <div class="chat-bubble">
+        <span class="username">beer0lympian</span>
+        I&#8217;d stay longer but I got a <mark>final exam</mark> dawg
+      </div>
+    </div>
+
+    <div class="chat-row" data-bubble="2">
+      <div class="chat-bubble">
+        <span class="username">quacktelligence</span>
+        <mark>skipping class</mark> to watch
+      </div>
+    </div>
+
+    <div class="chat-row" data-bubble="3">
+      <div class="chat-bubble">
+        <span class="username">brianallen07</span>
+        I just had a <mark>college class</mark> today
+      </div>
+    </div>
+
+    <div class="chat-row" data-bubble="4">
+      <div class="chat-bubble">
+        <span class="username">reedphillipsrad</span>
+        I missed the first few games because <mark>I was in class</mark>
+      </div>
+    </div>
+  </section>
+
+  <div class="intro-space"></div>
+
+  <!-- step 2 harm emerges -->
+  <div class="step-section" data-step="2">
+    <div class="step-card" id="card-2">
+      <h2>1,681 messages were <br> flagged as <em>harmful</em>.</h2>
+      <p>
+        Using LLMs, we identified harmful messages across the chat, where a culture of minimizing risk and nudging viewers toward betting now is encouraged.
+         
+      </p>
+      <div class="stat-group">
+        <div class="stat-pill toxic">
+          <span class="sval">1,318</span>
+          <span class="slbl">toxic</span>
+        </div>
+        <div class="stat-pill persuasion">
+          <span class="sval">192</span>
+          <span class="slbl">persuasion</span>
+        </div>
+        <div class="stat-pill addiction">
+          <span class="sval">171</span>
+          <span class="slbl">normalization</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- step 3 categorize harm -->
+  <div class="step-section" data-step="3">
+    <div class="step-card" id="card-3">
+      
+      <p>
+        Toxic messages include insults, aggression and harassment directed at players.
+        Some persuade others to join platforms or tail picks, framing winning as easy and guaranteed.
+        Some downplay the risks, seeing chasing losses or gambling as something normal and funny.
+      </p>
+    </div>
+  </div>
+
+  <div class="outro-space"></div>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="harm_particles.js"></script>
+
+</body>
+</html>

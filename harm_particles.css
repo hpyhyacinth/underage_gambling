@@ -1,0 +1,350 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=IBM+Plex+Mono:wght@300;400&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --toxic:       #e05a3a;
+  --persuasion:  #c9941a;
+  --addiction:   #3a7fd4;
+  --clean:       #3a3836;
+  --text:        #f0ece4;
+  --muted:       rgba(240,236,228,0.42);
+  --card-bg:     rgba(255,255,255,0.06);
+  --card-border: rgba(255,255,255,0.12);
+  --font-head:   'Cormorant Garamond', Georgia, serif;
+  --font-mono:   'IBM Plex Mono', 'Courier New', monospace;
+}
+
+html, body { width: 100%; overflow-x: hidden; background: #000; }
+
+body {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text);
+}
+
+/* ── fixed canvas ── */
+#canvas-bg { position: fixed; inset: 0; z-index: 0; }
+canvas { display: block; width: 100%; height: 100%; }
+
+/* ── step badge ── */
+#step-badge {
+  position: fixed;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.18);
+  z-index: 100;
+  pointer-events: none;
+  text-align: center;
+}
+
+/* ── legend — positioned top-right, visible on step 2 & 3 ── */
+#legend {
+  position: fixed;
+  top: 28px;
+  right: 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 100;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity .6s ease, transform .6s ease;
+  pointer-events: none;
+}
+#legend.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.leg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.leg-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.leg-count {
+  font-size: 9px;
+  color: rgba(240,236,228,0.22);
+  margin-left: 2px;
+}
+
+/* ── tooltip ── */
+#tooltip {
+  position: fixed;
+  pointer-events: none;
+  display: none;
+  background: rgba(14,13,12,0.94);
+  border: 0.5px solid rgba(255,255,255,0.13);
+  border-radius: 9px;
+  padding: 10px 14px;
+  max-width: 240px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.6;
+  z-index: 200;
+  text-align: left;
+}
+#tt-msg  { color: #cdc9c1; margin-bottom: 6px; }
+#tt-type {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+/* ── scroll root ── */
+#scroll-root { position: relative; z-index: 10; }
+.intro-space { height: 45vh; }
+.outro-space { height: 60vh; }
+
+/* ─────────────────────────────────────────
+   CHAT PROLOGUE
+───────────────────────────────────────── */
+#chat-prologue {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  gap: 0;
+}
+
+
+/* each row is invisible until .show is added */
+.chat-row {
+  display: flex;
+  width: 100%;
+  max-width: 460px;
+  margin-bottom: 20px;
+  opacity: 0;
+  /* spring starting state */
+  transform: scale(0.7) translateY(30px);
+  transition: none; /* set by JS per-bubble for stagger */
+}
+.chat-row.show {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  /* spring easing — overshoot then settle */
+  transition:
+    opacity   0.45s ease-out,
+    transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* left / right alignment */
+.chat-row:nth-child(odd)  { justify-content: flex-start; }
+.chat-row:nth-child(even) { justify-content: flex-end; }
+
+/* bubble base */
+.chat-bubble {
+  max-width: 78%;
+  padding: 12px 18px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.65;
+  color: rgba(240,236,228,0.88);
+  position: relative;
+  border-radius: 0.5em;
+}
+
+/* left bubble + left pointer */
+.chat-row:nth-child(odd) .chat-bubble {
+  background: rgba(255,255,255,0.07);
+  border: 0.5px solid rgba(255,255,255,0.11);
+}
+.chat-row:nth-child(odd) .chat-bubble::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+  border-right-color: rgba(255,255,255,0.07);
+  border-left: 0;
+  border-bottom: 0;
+  margin-top: -5px;
+  margin-left: -10px;
+}
+
+/* right bubble + right pointer */
+.chat-row:nth-child(even) .chat-bubble {
+  background: rgba(255,255,255,0.05);
+  border: 0.5px solid rgba(255,255,255,0.09);
+}
+.chat-row:nth-child(even) .chat-bubble::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+  border-left-color: rgba(255,255,255,0.05);
+  border-right: 0;
+  border-bottom: 0;
+  margin-top: -5px;
+  margin-right: -10px;
+}
+
+.chat-bubble .username {
+  display: block;
+  font-size: 8px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.28);
+  margin-bottom: 5px;
+}
+
+.chat-bubble mark {
+  background: none;
+  color: #c9941a;
+  font-style: italic;
+}
+
+/* ─────────────────────────────────────────
+   STEP CARDS
+───────────────────────────────────────── */
+.step-section {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+}
+
+.step-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 0.5px solid var(--card-border);
+  border-radius: 22px;
+  padding: 52px 56px;
+  max-width: 700px;
+  width: 100%;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(52px);
+  transition:
+    opacity  0.75s cubic-bezier(0.22,1,0.36,1),
+    transform 0.75s cubic-bezier(0.22,1,0.36,1);
+}
+.step-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.step-card h2 {
+  font-family: var(--font-head);
+  font-size: clamp(32px, 4.2vw, 50px);
+  font-weight: 300;
+  line-height: 1.12;
+  color: var(--text);
+  margin-bottom: 20px;
+}
+.step-card h2 em { font-style: italic; }
+
+.step-card p {
+  font-size: 16px;
+  color: var(--muted);
+  line-height: 1.95;
+  max-width: 550px;
+  margin: 0 auto;
+}
+
+/* stat pills */
+.stat-group {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 30px;
+  flex-wrap: wrap;
+}
+.stat-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 0.5px solid;
+  min-width: 96px;
+}
+.stat-pill .sval {
+  font-family: var(--font-head);
+  font-size: 30px;
+  font-weight: 300;
+  line-height: 1;
+}
+.stat-pill .slbl {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  opacity: 0.55;
+}
+.stat-pill.toxic      { border-color:rgba(224,90,58,.38);  background:rgba(224,90,58,.06);  color:var(--toxic); }
+.stat-pill.persuasion { border-color:rgba(201,148,26,.38); background:rgba(201,148,26,.06); color:var(--persuasion); }
+.stat-pill.addiction  { border-color:rgba(58,127,212,.38); background:rgba(58,127,212,.06); color:var(--addiction); }
+
+/* cluster tags */
+.cluster-tags {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 11px;
+  margin-top: 30px;
+}
+.ctag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  font-size: 10px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.ctag-dot   { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.ctag-arrow { color: rgba(255,255,255,0.18); }
+.ctag-lbl   { color: var(--muted); }
+
+/* ── error overlay ── */
+#error-msg {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: #0b0b0d;
+  gap: 14px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 2;
+}
+#error-msg.show { display: flex; }
+#error-msg h3 {
+  font-family: var(--font-head);
+  font-size: 30px;
+  font-weight: 300;
+  color: var(--text);
+}
+#error-msg code {
+  background: #1a1917;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  color: var(--addiction);
+  font-size: 11px;
+}
